@@ -1,0 +1,23 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Compiled binaries
+desktop-critter
+desktop-critter.exe
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+CTestTestfile.cmake
+
+# macOS
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.user
