@@ -1,21 +1,21 @@
 cmake_minimum_required(VERSION 3.15)
-project(desktop-critter C)
+project(pomagatchi C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(desktop-critter src/main.c)
+add_executable(pomagatchi src/main.c)
 
-target_include_directories(desktop-critter PRIVATE external)
+target_include_directories(pomagatchi PRIVATE external)
 
 add_library(raylib STATIC IMPORTED)
 set_target_properties(raylib PROPERTIES
     IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/external/libraylib.a
 )
 
-target_link_libraries(desktop-critter PRIVATE raylib)
+target_link_libraries(pomagatchi PRIVATE raylib)
 
 if(APPLE)
-    target_link_libraries(desktop-critter PRIVATE
+    target_link_libraries(pomagatchi PRIVATE
         "-framework Cocoa"
         "-framework IOKit"
         "-framework CoreVideo"
