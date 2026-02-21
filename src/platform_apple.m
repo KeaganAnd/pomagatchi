@@ -13,7 +13,8 @@ void Platform_SetDesktopMode(void) {
   NSWindow *window = (__bridge NSWindow *)handle;
 
   // Set window at desktop level (behind everything)
-  [window setLevel:(NSInteger)kCGDesktopWindowLevel];
+  [window setLevel:NSNormalWindowLevel -
+                   1]; // slightly above desktop, still behind most windows
 
   // Make it visible on all spaces and stationary
   [window setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces |
