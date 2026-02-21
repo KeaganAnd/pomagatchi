@@ -7,12 +7,14 @@ add_executable(pomagatchi src/main.c)
 
 target_include_directories(pomagatchi PRIVATE external)
 
+find_package(CURL REQUIRED)
+
 add_library(raylib STATIC IMPORTED)
 set_target_properties(raylib PROPERTIES
     IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/external/libraylib.a
 )
 
-target_link_libraries(pomagatchi PRIVATE raylib)
+target_link_libraries(pomagatchi PRIVATE raylib CURL::libcurl)
 
 if(APPLE)
     target_link_libraries(pomagatchi PRIVATE
