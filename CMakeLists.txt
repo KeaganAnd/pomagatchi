@@ -6,6 +6,8 @@ set(CMAKE_C_STANDARD 99)
 # Base source files
 set(SRC
     src/main.c
+    src/clock.c
+    src/buttons.c
 )
 
 # Add platform-specific files
@@ -21,7 +23,7 @@ endif()
 add_executable(pomagatchi ${SRC})
 
 # Include directories
-target_include_directories(pomagatchi PRIVATE external)
+target_include_directories(pomagatchi PRIVATE include external)
 
 # Raylib static library
 add_library(raylib STATIC IMPORTED)
