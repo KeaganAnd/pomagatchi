@@ -9,17 +9,23 @@ Omar, Keagan
 
 #include "buttons.h"
 #include "clock.h"
+#include "flipBook.h"
 #include "platform.h"
 #include "raylib.h"
 #include "raymath.h"
 #include <stdio.h>
+#include <stdlib.h>
 // Constants
 
-#define uiScale 4.0f   // Scale for the ui since pixel art is small resolutions
-#define pomoTime 25.0f // Time for work time, short break, and long break
-#define shortBreakTime 5.0f
-#define longBreakTime 15.0f
-#define longBreakThreshold 2
+#define uiScale 4.0f // Scale for the ui since pixel art is small resolutions
+#define pomoTime                                                               \
+  0.3f // Time for work time, short break, and long break | Default 25.0f
+#define shortBreakTime 0.1f  // Default 5.0f
+#define longBreakTime 0.2f   // Default 15.0f
+#define longBreakThreshold 2 // Default 2
+
+typedef enum { SHORT_BREAK, LONG_BREAK, WORKING } Phase;
+Phase currentPhase = WORKING;
 
 // Program main entry point
 
@@ -40,10 +46,12 @@ int main(void) {
   // Load images and textures
   Image clock = LoadImage("../imgs/clock.png");
   Image button = LoadImage("../imgs/button.png");
+  Image catSpriteImage = LoadImage("../sprites/OrangeCat.png");
 
   Texture2D clockTexture =
       LoadTextureFromImage(clock); // Creates texture from img
   Texture2D buttonTexture = LoadTextureFromImage(button);
+  Texture2D catSprites = LoadTextureFromImage(catSpriteImage);
 
   SetTextureFilter(clockTexture,
                    TEXTURE_FILTER_POINT); // Disables filtering to keep scaled
@@ -59,7 +67,14 @@ int main(void) {
   Timer_Init(&timer, pomoTime * 60); // 25 minutes
   u_int8_t pomoCount = 0; // How many times a pomo cycle has been completed to
                           // see when a short break should happen
-
+  Vector2 spriteSize = {32.0f, 32.0f}; // Size of the sprites
+  Vector2 start = {
+      0.0f, 2.0f}; // Coordinates where the first frame is starts at (0,0)
+  flipBook *catLongAni = createFlipBook(catSprites, 4, spriteSize, start, 2);
+  flipBook *catShortAni =
+      createFlipBook(catSprites, 12, spriteSize, (Vector2){0.0f, 6.0f}, 2);
+  flipBook *catActiveAni =
+      createFlipBook(catSprites, 12, spriteSize, (Vector2){0.0f, 9.0f}, 2);
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
@@ -83,15 +98,20 @@ int main(void) {
       if (timer.duration == (pomoTime * 60)) {
         pomoCount += 1;
         if (pomoCount == longBreakThreshold) {
+          currentPhase = LONG_BREAK;
+          printf("Long break\n");
           timer.duration = (longBreakTime * 60);
         } else {
           printf("Short break\n");
+          currentPhase = SHORT_BREAK;
           timer.duration = (shortBreakTime * 60);
         }
         Timer_Reset(&timer);
         Timer_Start(&timer);
         PlaySound(pomoSwitch);
       } else if (timer.duration == (shortBreakTime * 60)) {
+        currentPhase = WORKING;
+        printf("Active Phase\n");
         timer.duration = (pomoTime * 60);
         Timer_Reset(&timer);
         Timer_Start(&timer);
@@ -142,9 +162,6 @@ int main(void) {
                            (Vector2){buttonTexture.width, buttonTexture.height},
                            uiScale)) {
       button1Color = LIGHTGRAY;
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        TraceLog(LOG_INFO, "Button 1 clicked!");
-      }
     }
 
     if (IsMouseOverEllipse(mousePos, button2Positon,
@@ -152,7 +169,6 @@ int main(void) {
                            uiScale)) {
       button2Color = LIGHTGRAY;
       if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        TraceLog(LOG_INFO, "Button 2 clicked!");
         if (timer.running) {
           Timer_Pause(&timer);
         } else {
@@ -165,13 +181,21 @@ int main(void) {
                            (Vector2){buttonTexture.width, buttonTexture.height},
                            uiScale)) {
       button3Color = LIGHTGRAY;
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        TraceLog(LOG_INFO, "Button 3 clicked!");
-      }
     }
     DrawTextureEx(buttonTexture, buttonPosition, 0.0f, uiScale, button1Color);
     DrawTextureEx(buttonTexture, button2Positon, 0.0f, uiScale, button2Color);
     DrawTextureEx(buttonTexture, button3Positon, 0.0f, uiScale, button3Color);
+
+    // Decide which cat to draw
+    //
+    printf("%d\n", currentPhase);
+    if (currentPhase == LONG_BREAK) {
+      drawFlipBook(catLongAni, clockPostion, uiScale);
+    } else if (currentPhase == SHORT_BREAK) {
+      drawFlipBook(catShortAni, clockPostion, uiScale);
+    } else if (currentPhase == WORKING) {
+      drawFlipBook(catActiveAni, clockPostion, uiScale);
+    }
 
     EndDrawing();
   }
@@ -180,8 +204,13 @@ int main(void) {
   // etc
   UnloadTexture(clockTexture);
   UnloadTexture(buttonTexture);
+  UnloadTexture(catSprites);
   UnloadSound(pomoSwitch);
   UnloadFont(pixelFont);
+
+  free(catLongAni);
+  free(catShortAni);
+  free(catActiveAni);
 
   CloseAudioDevice();
 

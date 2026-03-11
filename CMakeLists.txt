@@ -8,6 +8,7 @@ set(SRC
     src/main.c
     src/clock.c
     src/buttons.c
+    src/flipBook.c
 )
 
 # Add platform-specific files
